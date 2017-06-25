@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
 
-	public float speed = 6f;
+	public float movementSpeed = 6f;
 
 	private Vector3 movement;
 	Rigidbody playerRigidbody;
@@ -24,21 +24,16 @@ public class PlayerController : MonoBehaviour {
 		float v = Input.GetAxisRaw("Vertical");
 
 		Move(h, v);
-		Turning();
 		Animating(h, v);
 	}
 
 	void Update()
 	{
-		if (Input.GetKeyDown("space") && !isFalling){
-			playerRigidbody.velocity += speed * Vector3.up;
-		}
-
-
-		if (Input.GetKey("space") && !isFalling){
-			playerRigidbody.velocity += speed * Vector3.up;
-		}
-		transform.Rotate(Time.deltaTime, 0, 0);
+		if (Input.GetKeyDown("space") && !isFalling)
+        {
+            isFalling = true;
+            playerRigidbody.velocity += movementSpeed * Vector3.up;
+        }
 	}
 
 	void OnCollisionStay(Collision collisionInfo)
@@ -51,28 +46,14 @@ public class PlayerController : MonoBehaviour {
 	{
 		movement.Set(h, 0f, v);
 		// Delta time prevents flying
-		movement = movement.normalized * speed * Time.deltaTime;
+		movement = movement.normalized * movementSpeed * Time.deltaTime;
+
+		// make the player face the direction they are running towards
+		// taken from: http://answers.unity3d.com/questions/803365/make-the-player-face-his-movement-direction.html
+		transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(movement), 0.15F);
+		transform.Translate (movement * movementSpeed * Time.deltaTime, Space.World);
 
 		playerRigidbody.MovePosition(transform.position + movement); 
-	}
-
-	void Turning()
-	{
-
-		// Stubbed out since this is mouse detected player turning.
-		//  We'll actually change this to input detected turning.
-//		Ray camRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-//
-//		RaycastHit floorHit;
-//
-//		if(Physics.Raycast (camRay, out floorHit, camRayLength, floorMask))
-//		{
-//			Vector3 playerToMouse = floorHit.point - transform.position;
-//			playerToMouse.y = 0f;
-//
-//			Quaternion newRotation = Quaternion.LookRotation(playerToMouse);
-//			playerRigidbody.MoveRotation(newRotation);
-//		}
 	}
 
 	void Animating(float h, float v)
